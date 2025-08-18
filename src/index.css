@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Arbosis Design System - All colors, gradients, fonts, etc defined here. 
+All colors MUST be HSL.
+Based on #deebfd background and logo colors.
+*/
+
+@layer base {
+  :root {
+    /* Base colors inspired by Arbosis logo and requirements */
+    --background: 213 82% 93%; /* #deebfd converted to HSL */
+    --foreground: 229 46% 17%; /* Dark blue for text */
+
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 229 46% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 229 46% 17%;
+
+    /* Primary blues from logo */
+    --primary: 229 84% 35%; /* Deep blue from logo */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 229 84% 45%;
+
+    /* Secondary teal/cyan from logo circuits */
+    --secondary: 180 100% 85%; /* Light cyan background */
+    --secondary-foreground: 229 84% 35%;
+
+    --muted: 213 50% 88%; /* Muted blue-gray */
+    --muted-foreground: 229 25% 45%;
+
+    /* Accent cyan from logo technology elements */
+    --accent: 177 70% 50%; /* Vibrant cyan/teal */
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 177 70% 60%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 50% 80%; /* Soft blue border */
+    --input: 213 50% 85%;
+    --ring: 177 70% 50%; /* Cyan ring for focus */
+
+    --radius: 0.75rem; /* Slightly more rounded as requested */
+
+    /* Custom Arbosis tokens */
+    --tech-gradient: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --nature-gradient: linear-gradient(135deg, hsl(var(--accent)), hsl(180 65% 65%));
+    --header-shadow: 0 2px 10px hsl(var(--primary) / 0.08);
+    --button-shadow: 0 2px 8px hsl(var(--primary) / 0.15);
+    
+    /* Metric card icon colors */
+    --metric-green: 142 76% 36%; /* Verde para triângulo */
+    --metric-blue: 217 91% 60%; /* Azul para alvo */
+    --metric-purple: 262 83% 58%; /* Roxo para localização */
+    --metric-orange: 25 95% 53%; /* Laranja para clipe */
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease-out;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+
+  /* Custom component styles */
+  .arbosis-header {
+    background: hsl(var(--background));
+    box-shadow: var(--header-shadow);
+    backdrop-filter: blur(10px);
+  }
+
+  .arbosis-nav-active {
+    position: relative;
+    color: hsl(var(--primary));
+    font-weight: 500;
+  }
+
+  .arbosis-nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--tech-gradient);
+    border-radius: 1px;
+  }
+
+  .arbosis-button-primary {
+    background: var(--tech-gradient);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--button-shadow);
+    transition: var(--transition-smooth);
+  }
+
+  .arbosis-button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
+  }
+}
