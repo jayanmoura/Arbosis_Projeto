@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { User, FileText, BarChart3, X, ChevronDown, Settings, Menu } from "lucide-react"
+import { User, FileText, BarChart3, X, ChevronDown, Settings, Menu, Trash2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export const Header = () => {
   const location = useLocation()
@@ -21,6 +22,15 @@ export const Header = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSuperAdminModalOpen, setIsSuperAdminModalOpen] = useState(false)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+  
+  // Super Admin form states
+  const [newUsername, setNewUsername] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [newUserRole, setNewUserRole] = useState("")
+  const [allocatedProject, setAllocatedProject] = useState("")
+  const [activeSection, setActiveSection] = useState("usuarios") // Controla qual seção está ativa no super admin
 
   const navItems = [
     { id: "inicio", label: "Início", path: "/" },
@@ -95,8 +105,9 @@ export const Header = () => {
     // Verifica as credenciais
     if (username.trim() === "teste" && password.trim() === "123456") {
       console.log("Login bem-sucedido")
-      // Login bem-sucedido
+      // Login bem-sucedido - adiciona ambas as classes para o usuário teste
       document.body.classList.add('admin-logged-in')
+      document.body.classList.add('super-admin-logged-in')
       
       // Fecha o modal e limpa os campos
       setIsLoginModalOpen(false)
@@ -114,8 +125,45 @@ export const Header = () => {
   }
 
   const handleLogout = () => {
-    // Remove classe admin do body
+    // Remove ambas as classes admin do body
     document.body.classList.remove('admin-logged-in')
+    document.body.classList.remove('super-admin-logged-in')
+  }
+
+  const handleCreateUser = () => {
+    if (!newUsername.trim() || !newPassword.trim() || !newUserRole) {
+      alert("Por favor, preencha todos os campos.")
+      return
+    }
+    
+    // Para Sub-Administrador, também validar o projeto alocado
+    if (newUserRole === "sub-admin" && !allocatedProject) {
+      alert("Por favor, selecione um projeto para o Sub-Administrador.")
+      return
+    }
+    
+    // Aqui seria implementada a lógica de criação do usuário
+    console.log("Criar usuário:", { newUsername, newPassword, newUserRole, allocatedProject })
+    
+    const projectText = newUserRole === "sub-admin" && allocatedProject 
+      ? ` e alocado ao projeto "${projectOptions.find(p => p.id === allocatedProject)?.name}"`
+      : ""
+    
+    alert(`Usuário "${newUsername}" criado com sucesso${projectText}!`)
+    
+    // Limpar campos
+    setNewUsername("")
+    setNewPassword("")
+    setNewUserRole("")
+    setAllocatedProject("")
+  }
+
+  const handleDeleteUser = (username: string) => {
+    if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
+      // Aqui seria implementada a lógica de exclusão do usuário
+      console.log("Excluir usuário:", username)
+      alert(`Usuário "${username}" excluído com sucesso!`)
+    }
   }
 
   const handleProjectModalSelect = (projectId: string, projectName: string) => {
@@ -171,6 +219,7 @@ export const Header = () => {
   useEffect(() => {
     const checkAdminStatus = () => {
       setIsAdmin(document.body.classList.contains('admin-logged-in'))
+      setIsSuperAdmin(document.body.classList.contains('super-admin-logged-in'))
     }
     
     checkAdminStatus()
@@ -274,7 +323,7 @@ export const Header = () => {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-popover border border-border shadow-lg">
+               <DropdownMenuContent align="end" className="w-56 bg-popover border border-border shadow-lg">
                 <DropdownMenuItem 
                   className="cursor-pointer hover:bg-muted focus:bg-muted"
                   onClick={() => handleViewSelect("diagnosticos")}
@@ -296,6 +345,17 @@ export const Header = () => {
                 >
                   <span>Selecionar Outro Projeto...</span>
                 </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer hover:bg-muted focus:bg-muted"
+                      onClick={() => setIsSuperAdminModalOpen(true)}
+                    >
+                      <span>Painel de Controle Total</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -490,6 +550,366 @@ export const Header = () => {
               >
                 Entrar
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Super Admin */}
+      <Dialog open={isSuperAdminModalOpen} onOpenChange={setIsSuperAdminModalOpen}>
+        <DialogContent id="super-admin-modal" className="max-w-[95vw] lg:max-w-[80vw] w-full bg-card border border-border shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-foreground">
+              Painel de Controle Total
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col lg:flex-row h-[650px]">
+            {/* Menu de Navegação - Horizontal em telas pequenas, Vertical em telas grandes */}
+            <div className="w-full lg:w-56 bg-muted/10 border-b lg:border-b-0 lg:border-r border-border">
+              <nav className="flex lg:flex-col p-4 lg:p-6 lg:pt-4 space-x-2 lg:space-x-0 lg:space-y-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveSection("usuarios")}
+                  className={`flex-1 lg:w-full justify-center lg:justify-start py-2 lg:py-3 px-3 lg:px-4 text-sm transition-all ${
+                    activeSection === "usuarios" 
+                      ? "text-primary bg-primary/10 font-medium" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Usuários</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveSection("projetos")}
+                  className={`flex-1 lg:w-full justify-center lg:justify-start py-2 lg:py-3 px-3 lg:px-4 text-sm transition-all ${
+                    activeSection === "projetos" 
+                      ? "text-primary bg-primary/10 font-medium" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Projetos</span>
+                </Button>
+              </nav>
+            </div>
+
+            {/* Área de Conteúdo */}
+            <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
+              {/* Seção Usuários */}
+              {activeSection === "usuarios" && (
+                <div className="space-y-8">
+                  {/* Seção Criar Novo Usuário */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">Criar Novo Usuário</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-username" className="text-sm font-medium text-foreground">
+                          Nome de Usuário
+                        </Label>
+                        <Input
+                          id="new-username"
+                          type="text"
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          placeholder="Digite o nome de usuário"
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password" className="text-sm font-medium text-foreground">
+                          Senha Temporária
+                        </Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Digite a senha temporária"
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="new-role" className="text-sm font-medium text-foreground">
+                          Função
+                        </Label>
+                        <Select value={newUserRole} onValueChange={setNewUserRole}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione a função" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="super-admin">Super Administrador</SelectItem>
+                            <SelectItem value="sub-admin">Sub-Administrador</SelectItem>
+                            <SelectItem value="user">Usuário</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Campo "Alocar ao Projeto" - Visível apenas para Sub-Administrador */}
+                      {newUserRole === "sub-admin" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="allocated-project" className="text-sm font-medium text-foreground">
+                            Alocar ao Projeto
+                          </Label>
+                          <Select value={allocatedProject} onValueChange={setAllocatedProject}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione o projeto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {projectOptions.map((project) => (
+                                <SelectItem key={project.id} value={project.id}>
+                                  {project.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant="arbosis-primary"
+                      onClick={handleCreateUser}
+                      className="w-full md:w-auto"
+                    >
+                      Criar Usuário
+                    </Button>
+                  </div>
+                  
+                  {/* Seção Gerenciar Usuários Existentes */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">Usuários Atuais</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                        <div className="flex-1">
+                          <span className="text-foreground">Usuário: </span>
+                          <span className="font-mono text-sm bg-background px-2 py-1 rounded">subadmin_rj</span>
+                          <span className="text-muted-foreground mx-2">|</span>
+                          <span className="text-foreground">Função: </span>
+                          <span className="text-primary font-medium">Sub-Administrador</span>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser("subadmin_rj")}
+                          className="ml-4"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                        <div className="flex-1">
+                          <span className="text-foreground">Usuário: </span>
+                          <span className="font-mono text-sm bg-background px-2 py-1 rounded">tecnico_sp</span>
+                          <span className="text-muted-foreground mx-2">|</span>
+                          <span className="text-foreground">Função: </span>
+                          <span className="text-muted-foreground font-medium">Usuário</span>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser("tecnico_sp")}
+                          className="ml-4"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                        <div className="flex-1">
+                          <span className="text-foreground">Usuário: </span>
+                          <span className="font-mono text-sm bg-background px-2 py-1 rounded">supervisor_mg</span>
+                          <span className="text-muted-foreground mx-2">|</span>
+                          <span className="text-foreground">Função: </span>
+                          <span className="text-muted-foreground font-medium">Usuário</span>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser("supervisor_mg")}
+                          className="ml-4"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Seção Projetos */}
+              {activeSection === "projetos" && (
+                <div className="space-y-8">
+                  {/* Seção Criar Novo Projeto */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">Criar Novo Projeto</h3>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="project-name" className="text-sm font-medium text-foreground">
+                            Nome do Projeto
+                          </Label>
+                          <Input
+                            id="project-name"
+                            type="text"
+                            placeholder="Digite o nome do projeto"
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="project-location" className="text-sm font-medium text-foreground">
+                            Local (Cidade/Estado)
+                          </Label>
+                          <Input
+                            id="project-location"
+                            type="text"
+                            placeholder="Ex: Rio de Janeiro/RJ"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="project-logo" className="text-sm font-medium text-foreground">
+                          Logo do Projeto
+                        </Label>
+                        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                          <Input
+                            id="project-logo"
+                            type="file"
+                            accept="image/png"
+                            className="hidden"
+                          />
+                          <label htmlFor="project-logo" className="cursor-pointer">
+                            <div className="space-y-2">
+                              <div className="text-muted-foreground">
+                                Clique para enviar o logo
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Dimensão recomendada: 200x60 pixels, formato PNG com fundo transparente
+                              </div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="sub-admin-select" className="text-sm font-medium text-foreground">
+                          Designar Sub-Admin
+                        </Label>
+                        <Select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione um Sub-Administrador" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="subadmin_rj">subadmin_rj</SelectItem>
+                            <SelectItem value="usuario_sem_permissao_1">usuario_sem_permissao_1</SelectItem>
+                            <SelectItem value="usuario_sem_permissao_2">usuario_sem_permissao_2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      variant="arbosis-primary"
+                      className="w-full md:w-auto"
+                    >
+                      Criar Projeto
+                    </Button>
+                  </div>
+                  
+                  {/* Seção Gerenciar Projetos Existentes */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">Gerenciar Projetos Existentes</h3>
+                    
+                    <div className="space-y-4">
+                      {/* Card de Projeto 1 */}
+                      <Card className="border border-border">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h4 className="text-lg font-medium text-foreground">
+                              Projeto de Arborização Urbana - RJ
+                            </h4>
+                            <div className="flex space-x-2">
+                              <Button variant="outline" size="sm">
+                                Editar
+                              </Button>
+                              <Button variant="destructive" size="sm">
+                                Excluir
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <span className="text-foreground font-medium">Sub-Admin: </span>
+                              <span className="font-mono text-sm bg-background px-2 py-1 rounded">subadmin_rj</span>
+                            </div>
+                            
+                            <div>
+                              <span className="text-foreground font-medium">Lista de Usuários:</span>
+                              <div className="mt-1 space-y-1">
+                                <div className="font-mono text-sm bg-muted/30 px-2 py-1 rounded inline-block mr-2">
+                                  tecnico_sp
+                                </div>
+                                <div className="font-mono text-sm bg-muted/30 px-2 py-1 rounded inline-block">
+                                  supervisor_mg
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Card de Projeto 2 */}
+                      <Card className="border border-border">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h4 className="text-lg font-medium text-foreground">
+                              Análise de Risco de Queda - SP
+                            </h4>
+                            <div className="flex space-x-2">
+                              <Button variant="outline" size="sm">
+                                Editar
+                              </Button>
+                              <Button variant="destructive" size="sm">
+                                Excluir
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <span className="text-foreground font-medium">Sub-Admin: </span>
+                              <span className="font-mono text-sm bg-background px-2 py-1 rounded">outro_subadmin</span>
+                            </div>
+                            
+                            <div>
+                              <span className="text-foreground font-medium">Lista de Usuários:</span>
+                              <div className="mt-1">
+                                <div className="font-mono text-sm bg-muted/30 px-2 py-1 rounded inline-block">
+                                  tecnico_sp
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
